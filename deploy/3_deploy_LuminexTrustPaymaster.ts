@@ -81,11 +81,18 @@ async function approveCalls(factory: LuminexAccountFactory, paymaster: LuminexTo
 
   const foreignTargetAllowedCalls = [
     [
+      'FragmentedReserves',
+      '0x27da551E38A3b2A9c2bA496679e5C89F847E60e1',
+      [
+        selector('exchange(address,address,uint256,uint256,address)')
+      ]
+    ],
+    [
       'DepositVault',
       '0xfb88fe57D84636EC1eAfF8d8B9Ad0E771f7e3456',
       [
         selector('deposit(bytes32,address,uint256)')
-      ],
+      ]
     ],
     [
       'SapphireEndpoint',
