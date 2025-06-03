@@ -82,7 +82,7 @@ async function approveCalls(factory: LuminexAccountFactory, paymaster: LuminexTo
   const foreignTargetAllowedCalls = [
     [
       'FragmentedReserves',
-      '0x27da551E38A3b2A9c2bA496679e5C89F847E60e1',
+      '0x52fC5d04fa27389AE6a4c395Afd5ca80F32362Ba',
       [
         selector('exchange(address,address,uint256,uint256,address)')
       ]
