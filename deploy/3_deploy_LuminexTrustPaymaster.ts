@@ -19,22 +19,20 @@ const deploySimpleAccountFactory: DeployFunction = async (hre: HardhatRuntimeEnv
   const entrypointDeployment = await hre.deployments.get('EntryPoint')
   const paymasterDeployed = await hre.deployments.deploy(
     'LuminexTokenPaymaster', {
-    from,
-    args: [entrypointDeployment.address, from, WNATIVE[chainId], factoryDeployed.address],
-    gasLimit: 6e6,
-    log: true,
-    deterministicDeployment: true
-  })
-
+      from,
+      args: [entrypointDeployment.address, from, WNATIVE[chainId], factoryDeployed.address],
+      gasLimit: 6e6,
+      log: true,
+      deterministicDeployment: true
+    })
 
   const factory = await hre.ethers.getContractAt('LuminexAccountFactory', factoryDeployed.address)
   const paymaster = await hre.ethers.getContractAt('LuminexTokenPaymaster', paymasterDeployed.address)
 
-
-  const BALANCE_VIEWER = await factory.BALANCE_VIEWER();
+  const BALANCE_VIEWER = await factory.BALANCE_VIEWER()
   if (!await factory.hasRole(BALANCE_VIEWER, paymasterDeployed.address)) {
-    const tx = await factory.grantRole(BALANCE_VIEWER, paymasterDeployed.address);
-    await tx.wait();
+    const tx = await factory.grantRole(BALANCE_VIEWER, paymasterDeployed.address)
+    await tx.wait()
     console.log(`  Granted LuminexAccountFactory.BALANCE_VIEWER to ${paymasterDeployed.address}`)
   }
 
@@ -72,12 +70,10 @@ deploySimpleAccountFactory.skip = async (env) => {
 
 export default deploySimpleAccountFactory
 
-async function approveCalls(factory: LuminexAccountFactory, paymaster: LuminexTokenPaymaster) {
+async function approveCalls (factory: LuminexAccountFactory, paymaster: LuminexTokenPaymaster) {
   const selector = (abiString: string): string => {
-    return ethers.utils.solidityKeccak256(["string"], [abiString]).slice(0, 10)
+    return ethers.utils.solidityKeccak256(['string'], [abiString]).slice(0, 10)
   }
-
-
 
   const foreignTargetAllowedCalls = [
     [
@@ -85,6 +81,13 @@ async function approveCalls(factory: LuminexAccountFactory, paymaster: LuminexTo
       '0x52fC5d04fa27389AE6a4c395Afd5ca80F32362Ba',
       [
         selector('exchange(address,address,uint256,uint256,address)')
+      ]
+    ],
+    [
+      'ReferralReporter',
+      '0x08C0d4F1D48791d9dC30eB13757594AB5BDfe663',
+      [
+        selector('reportSwapVolume(bytes32,uint256)')
       ]
     ],
     [
@@ -117,16 +120,14 @@ async function approveCalls(factory: LuminexAccountFactory, paymaster: LuminexTo
     ]
   ] as Array<[string, string, string[]]>
 
-
-
   const getSelectorsWhitelist = (): Array<[string, string, string[]]> => {
     const paymasterTargetAllowedCalls = [
-      "Paymaster",
+      'Paymaster',
       paymaster.address,
       [
         selector('buyNativeForToken(address,uint256,uint256,address)'),
         selector('tokensRequiredForNative(address,uint256)'),
-        selector('debt(address,address)'),
+        selector('debt(address,address)')
       ]
     ] as [string, string, string[]]
 
@@ -140,10 +141,9 @@ async function approveCalls(factory: LuminexAccountFactory, paymaster: LuminexTo
             selector('approve(address,uint256)'),
             selector('transferFrom(address,address,uint256)'),
             selector('balanceOf(address)'),
-            selector('unwrap(uint256,address)'),
+            selector('unwrap(uint256,address)')
           ]
         ] as [string, string, string[]]))
-
 
     return [
       ...foreignTargetAllowedCalls,
@@ -156,14 +156,14 @@ async function approveCalls(factory: LuminexAccountFactory, paymaster: LuminexTo
   for (const [name, target, selectors] of allowedCalls) {
     let allRegistered = true
     for (let i = 0; i < selectors.length && allRegistered; i++) {
-      const selector = selectors[i];
+      const selector = selectors[i]
       allRegistered = await factory.callStatic.isCallAllowed(target, selector)
     }
 
     if (allRegistered) continue
 
     const tx = await factory.allowCalls(target, selectors)
-    await tx.wait();
+    await tx.wait()
     console.log('  Allowed calls', {
       name, target, selectors
     })
